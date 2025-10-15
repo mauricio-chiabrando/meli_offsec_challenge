@@ -2,6 +2,7 @@
 
 Este proyecto implementa un **agente conversacional** capaz de consultar un servidor **LDAP** utilizando un **modelo de lenguaje Gemini** a través de **LangChain**.
 Permite obtener información de usuarios y los grupos a los que pertenecen mediante consultas en lenguaje natural.
+Permite también enumerar los usuarios y grupos existentes en un dominio, además de obtener los usuarios que podrían tener privilegios elevados.
 
 ---
 
@@ -12,6 +13,9 @@ Permite obtener información de usuarios y los grupos a los que pertenecen media
 
   * Información del usuario actual.
   * Grupos a los que pertenece un usuario específico.
+  * Enumeración de usuarios
+  * Enumeración de grupos
+  * Búsqueda de posibles cuentas con privilegios elevados
 * Integración con **Google Gemini** a través de `langchain-google-genai`.
 * Interfaz interactiva desde consola.
 
@@ -81,6 +85,9 @@ Luego podés escribir consultas naturales como:
 >> ¿Quién soy?
 >> ¿A qué grupos pertenezco?
 >> ¿Qué grupos tiene el usuario john.doe?
+>> ¿Cuales son los usuarios del dominio?
+>> ¿Qué grupos existen en el dominio?
+>> ¿Qué usuarios podrían tener privilegios elevados?
 ```
 
 Para salir:
@@ -94,12 +101,15 @@ exit
 ## 🧠 Funcionamiento interno
 
 El agente utiliza **LangChain** con un modelo **Gemini 2.5 Flash**.
-Se le asignan dos herramientas principales:
+Se le asignan cinco herramientas principales:
 
-| Herramienta             | Descripción                                                   |
-| ----------------------- | ------------------------------------------------------------- |
-| `get_current_user_info` | Devuelve la información del usuario autenticado en LDAP       |
-| `get_user_groups`       | Devuelve los grupos a los que pertenece un usuario específico |
+| Herramienta                  | Descripción                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `get_current_user_info`      | Devuelve la información del usuario autenticado en LDAP                          |
+| `get_user_groups`            | Devuelve los grupos a los que pertenece un usuario específico                    |
+| `list_all_users`             | Enumera todos los usuarios visibles en el dominio                                |
+| `list_all_groups`            | Lista todos los grupos disponibles en LDAP                                       |
+| `search_privileged_accounts` | Busca cuentas sensibles, privilegiadas, con altos permisos o de servicio comunes |
 
 Ejemplo de configuración del modelo:
 
@@ -122,6 +132,15 @@ Eres el usuario con cn 'test.user', uid 'test.user', y tu correo es 'test.user@m
 
 >> ¿A qué grupos pertenezco?
 Perteneces a los grupos: qa, all_users.
+
+>> ¿Cuales son los usuarios del dominio?
+Los usuarios del dominio son: admin, john.doe, jane.smith, bob.wilson, alice.brown, test.user, carlos.rodriguez.
+
+>> ¿Qué grupos existen en el dominio?
+Los grupos existentes en el dominio son: admins, developers, managers, hr, finance, qa, it, all_users.
+
+>> ¿Qué usuarios podrían tener privilegios elevados?
+Los usuarios que podrían tener privilegios elevados son: cn=admin,ou=users,dc=meli,dc=com, cn=john.doe,ou=users,dc=meli,dc=com, cn=jane.smith,ou=users,dc=meli,dc=com.
 ```
 
 ---
